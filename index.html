@@ -111,10 +111,9 @@
 
   .bubble-row {
     display: flex;
-    flex-direction: column;
   }
-  .bubble-row.user { align-items: flex-end; }
-  .bubble-row.bot { align-items: flex-start; }
+  .bubble-row.user { justify-content: flex-end; }
+  .bubble-row.bot { justify-content: flex-start; }
 
   .bubble {
     max-width: 82%;
@@ -370,15 +369,16 @@
     }
 
     row.appendChild(bubble);
+    chatArea.appendChild(row);
 
     if (opts.meta) {
       const meta = document.createElement('div');
       meta.className = 'meta-line';
+      meta.style.textAlign = role === 'user' ? 'right' : 'left';
       meta.textContent = opts.meta;
-      row.appendChild(meta);
+      chatArea.appendChild(meta);
     }
 
-    chatArea.appendChild(row);
     chatArea.scrollTop = chatArea.scrollHeight;
   }
 
@@ -420,7 +420,6 @@
 
   async function sendToListen(blob, mimeType, label) {
     const baseUrl = getBaseUrl();
-    const startTime = performance.now();
 
     addBubble('user', label || '🎤 (voice message)');
     setStatus('Uploading...', 'busy');
@@ -446,8 +445,6 @@
         setStatus('Doraemon is thinking...', 'busy');
 
         const result = await pollJobStatus(baseUrl, data.job_id);
-        const durationSec = ((performance.now() - startTime) / 1000).toFixed(2);
-
         if (!result.ok) {
           addBubble('bot', result.data.error || 'Something went wrong while waiting for a reply.', { error: true });
           return;
@@ -470,13 +467,11 @@
         addBubble('bot', finalData.response || '(no reply text)', {
           commandType: cmd.type,
           direction: cmd.direction,
-          meta: `⚡ ${durationSec}s`,
         });
         if (finalData.response) speak(finalData.response);
         return;
       }
 
-      const durationSec = ((performance.now() - startTime) / 1000).toFixed(2);
       if (data.heard) {
         const heardRow = document.createElement('div');
         heardRow.className = 'meta-line';
@@ -488,7 +483,6 @@
       addBubble('bot', data.response || '(no reply text)', {
         commandType: cmd.type,
         direction: cmd.direction,
-        meta: `⚡ ${durationSec}s`,
       });
       if (data.response) speak(data.response);
     } catch (err) {
@@ -503,7 +497,6 @@
 
   async function sendTextMessage(message) {
     const baseUrl = getBaseUrl();
-    const startTime = performance.now();
 
     addBubble('user', message);
     setStatus('Doraemon is thinking...', 'busy');
@@ -517,7 +510,6 @@
         body: JSON.stringify({ message: message }),
       });
       const data = await resp.json();
-      const durationSec = ((performance.now() - startTime) / 1000).toFixed(2);
 
       if (!resp.ok) {
         addBubble('bot', data.error || ('Server error (' + resp.status + ')'), { error: true });
@@ -526,7 +518,6 @@
         addBubble('bot', data.response || '(no reply text)', {
           commandType: cmd.type,
           direction: cmd.direction,
-          meta: `⚡ ${durationSec}s`,
         });
         if (data.response) speak(data.response);
       }
