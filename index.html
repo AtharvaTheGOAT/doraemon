@@ -445,6 +445,12 @@
     });
   }
 
+  function playYouTube(query) {
+    const cleanQuery = encodeURIComponent(query || 'doraemon theme song');
+    const ytUrl = `https://www.youtube.com/results?search_query=${cleanQuery}`;
+    window.open(ytUrl, '_blank');
+  }
+
   function formatResponseTime(milliseconds) {
     const seconds = milliseconds / 1000;
     if (seconds < 1) {
@@ -643,6 +649,8 @@
 
         if (cmd.type === 'play_song') {
           playDoraemonSong();
+        } else if (cmd.type === 'play_youtube') {
+          playYouTube(cmd.query);
         } else if (finalData.response) {
           speak(finalData.response);
         }
@@ -673,6 +681,8 @@
 
       if (cmd.type === 'play_song') {
         playDoraemonSong();
+      } else if (cmd.type === 'play_youtube') {
+        playYouTube(cmd.query);
       } else if (data.response) {
         speak(data.response);
       }
@@ -732,6 +742,8 @@
 
         if (cmd.type === 'play_song') {
           playDoraemonSong();
+        } else if (cmd.type === 'play_youtube') {
+          playYouTube(cmd.query);
         } else if (data.response) {
           speak(data.response);
         }
