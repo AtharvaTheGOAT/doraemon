@@ -240,17 +240,6 @@
     padding: 4px;
   }
 
-  /* Hidden embedded YouTube player container */
-  #playerContainer {
-    position: fixed;
-    bottom: -200px;
-    left: 0;
-    width: 1px;
-    height: 1px;
-    opacity: 0.01;
-    pointer-events: none;
-  }
-
   .hidden { display: none !important; }
 </style>
 </head>
@@ -266,7 +255,7 @@
   <div class="empty-state" id="emptyState">
     <span class="emoji">🎙️</span>
     <p>
-      Tap the mic and say something like "hi", "move forward", or "play Doraemon song" —
+      Tap the mic and say something like "hi", "move forward", or "play Believer" —
       or type a message below.
     </p>
   </div>
@@ -292,33 +281,7 @@
   </div>
 </footer>
 
-<!-- Container for inline YouTube playback -->
-<div id="playerContainer">
-  <div id="ytPlayer"></div>
-</div>
-
-<!-- Load YouTube IFrame Player API -->
-<script src="https://www.youtube.com/iframe_api"></script>
-
 <script>
-let ytPlayer = null;
-let ytApiReady = false;
-
-function onYouTubeIframeAPIReady() {
-  ytPlayer = new YT.Player('ytPlayer', {
-    height: '1',
-    width: '1',
-    playerVars: {
-      'autoplay': 1,
-      'controls': 0,
-      'playsinline': 1
-    },
-    events: {
-      'onReady': () => { ytApiReady = true; }
-    }
-  });
-}
-
 (function () {
   const BACKEND_BASE_URL = "https://robot-backend-flask-server--manishgupta80.replit.app";
 
@@ -332,7 +295,7 @@ function onYouTubeIframeAPIReady() {
   const uploadBtn = document.getElementById('uploadBtn');
   const fileInput = document.getElementById('fileInput');
 
-  let currentSongAudio = null;
+  let currentAudioPlayer = null;
 
   function getBaseUrl() {
     return BACKEND_BASE_URL.replace(/\/+$/, '');
@@ -345,42 +308,30 @@ function onYouTubeIframeAPIReady() {
   }
 
   function stopAllAudio() {
-    if (currentSongAudio) {
-      currentSongAudio.pause();
-      currentSongAudio.currentTime = 0;
-      currentSongAudio = null;
-    }
-    if (ytPlayer && typeof ytPlayer.stopVideo === 'function') {
-      ytPlayer.stopVideo();
+    if (currentAudioPlayer) {
+      currentAudioPlayer.pause();
+      currentAudioPlayer.currentTime = 0;
+      currentAudioPlayer = null;
     }
   }
 
-  function playDoraemonSong() {
+  function playDirectAudio(url) {
     stopAllAudio();
-    const songUrl = getBaseUrl() + '/song';
-    currentSongAudio = new Audio(songUrl);
-    currentSongAudio.play().catch((err) => {
-      console.warn("Autoplay prevented:", err);
-      addBubble('bot', 'Tap to play the Doraemon song 🎵', { meta: 'Tap to start playback' });
+    currentAudioPlayer = new Audio(url);
+    currentAudioPlayer.play().catch((err) => {
+      console.warn("Audio playback prevented or failed:", err);
+      addBubble('bot', 'Tap here to begin audio playback 🎵', { meta: 'Tap to start' });
     });
   }
 
-  function playYouTubeInPage(query) {
-    stopAllAudio();
-    const searchTerm = query || 'doraemon theme song hindi';
-    
-    // Uses YouTube search list embed to play the top match automatically
-    if (ytPlayer && typeof ytPlayer.loadPlaylist === 'function') {
-      ytPlayer.loadPlaylist({
-        listType: 'search',
-        list: searchTerm,
-        index: 0
-      });
-    } else {
-      // Fallback: update iframe source directly
-      const container = document.getElementById('playerContainer');
-      container.innerHTML = `<iframe width="1" height="1" src="https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(searchTerm)}&autoplay=1" allow="autoplay"></iframe>`;
-    }
+  function playDoraemonSong() {
+    const songUrl = getBaseUrl() + '/song';
+    playDirectAudio(songUrl);
+  }
+
+  function playYouTubeAudio(query) {
+    const streamUrl = getBaseUrl() + '/stream_audio?q=' + encodeURIComponent(query || 'doraemon theme song hindi');
+    playDirectAudio(streamUrl);
   }
 
   function formatResponseTime(milliseconds) {
@@ -529,7 +480,7 @@ function onYouTubeIframeAPIReady() {
         if (cmd.type === 'play_song') {
           playDoraemonSong();
         } else if (cmd.type === 'play_youtube') {
-          playYouTubeInPage(cmd.query);
+          playYouTubeAudio(cmd.query);
         } else if (finalData.response) {
           speak(finalData.response);
         }
@@ -547,7 +498,7 @@ function onYouTubeIframeAPIReady() {
       if (cmd.type === 'play_song') {
         playDoraemonSong();
       } else if (cmd.type === 'play_youtube') {
-        playYouTubeInPage(cmd.query);
+        playYouTubeAudio(cmd.query);
       } else if (data.response) {
         speak(data.response);
       }
@@ -595,7 +546,7 @@ function onYouTubeIframeAPIReady() {
         if (cmd.type === 'play_song') {
           playDoraemonSong();
         } else if (cmd.type === 'play_youtube') {
-          playYouTubeInPage(cmd.query);
+          playYouTubeAudio(cmd.query);
         } else if (data.response) {
           speak(data.response);
         }
@@ -719,7 +670,7 @@ function onYouTubeIframeAPIReady() {
     const fresh = document.createElement('div');
     fresh.className = 'empty-state';
     fresh.id = 'emptyState';
-    fresh.innerHTML = '<span class="emoji">🎙️</span><p>Tap the mic and say something like "hi", "move forward", or "play Doraemon song" — or type a message below.</p>';
+    fresh.innerHTML = '<span class="emoji">🎙️</span><p>Tap the mic and say something like "hi", "move forward", or "play Believer" — or type a message below.</p>';
     chatArea.appendChild(fresh);
   });
 })();
