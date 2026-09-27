@@ -125,14 +125,15 @@
 
   .bubble-row {
     display: flex;
+    flex-direction: column;
   }
 
   .bubble-row.user {
-    justify-content: flex-end;
+    align-items: flex-end;
   }
 
   .bubble-row.bot {
-    justify-content: flex-start;
+    align-items: flex-start;
   }
 
   .bubble {
@@ -191,7 +192,6 @@
     padding: 0 4px;
   }
 
-  /* Response time styling */
   .response-time {
     display: flex;
     align-items: center;
@@ -418,11 +418,11 @@
   const uploadBtn = document.getElementById('uploadBtn');
   const fileInput = document.getElementById('fileInput');
 
+  let currentSongAudio = null;
 
   function getBaseUrl() {
     return BACKEND_BASE_URL.replace(/\/+$/, '');
   }
-
 
   function clearEmptyState() {
     if (emptyState && emptyState.parentNode) {
@@ -430,1020 +430,481 @@
     }
   }
 
+  function playDoraemonSong() {
+    if (currentSongAudio) {
+      currentSongAudio.pause();
+      currentSongAudio.currentTime = 0;
+    }
+    const songUrl = getBaseUrl() + '/song';
+    currentSongAudio = new Audio(songUrl);
+    currentSongAudio.play().catch((err) => {
+      console.warn("Autoplay prevented or failed:", err);
+      addBubble('bot', 'Tap to play the Doraemon song 🎵', {
+        meta: 'Tap to start playback'
+      });
+    });
+  }
 
-  /*
-   * Converts milliseconds into a clean response-time string.
-   */
   function formatResponseTime(milliseconds) {
     const seconds = milliseconds / 1000;
-
     if (seconds < 1) {
       return Math.round(milliseconds) + ' ms';
     }
-
     return seconds.toFixed(2) + ' s';
   }
 
-
-  /*
-   * Adds a message bubble.
-   *
-   * opts.responseTime can be passed in milliseconds.
-   */
   function addBubble(role, text, opts) {
-
     opts = opts || {};
-
     clearEmptyState();
 
     const row = document.createElement('div');
-
-    row.className =
-      'bubble-row ' +
-      (role === 'user' ? 'user' : 'bot');
-
+    row.className = 'bubble-row ' + (role === 'user' ? 'user' : 'bot');
 
     const bubble = document.createElement('div');
-
-    bubble.className =
-      'bubble ' +
-      (opts.error ? 'error' : role);
-
+    bubble.className = 'bubble ' + (opts.error ? 'error' : role);
 
     if (role === 'bot' && !opts.error) {
-
       const tag = document.createElement('span');
-
       tag.className = 'tag';
-
       tag.textContent = 'Doraemon';
-
       bubble.appendChild(tag);
     }
 
-
     const textNode = document.createElement('span');
-
     textNode.textContent = text;
-
     bubble.appendChild(textNode);
 
-
-    if (
-      opts.commandType &&
-      opts.commandType !== 'none'
-    ) {
-
+    if (opts.commandType && opts.commandType !== 'none') {
       const chip = document.createElement('span');
-
       chip.className = 'command-chip';
-
       chip.textContent =
         '⚙ command: ' +
         opts.commandType +
-        (opts.direction
-          ? ' (' + opts.direction + ')'
-          : '');
+        (opts.direction ? ' (' + opts.direction + ')' : '');
 
       bubble.appendChild(document.createElement('br'));
-
       bubble.appendChild(chip);
     }
 
-
     row.appendChild(bubble);
 
-    chatArea.appendChild(row);
-
-
-    /*
-     * Response time appears underneath bot responses.
-     */
     if (
       role === 'bot' &&
       !opts.error &&
       typeof opts.responseTime === 'number'
     ) {
-
       const responseTime = document.createElement('div');
-
       responseTime.className = 'response-time';
-
-      responseTime.style.textAlign = 'left';
-
       responseTime.textContent =
-        '⏱ Response time: ' +
-        formatResponseTime(opts.responseTime);
-
-      chatArea.appendChild(responseTime);
+        '⚡ ' + formatResponseTime(opts.responseTime);
+      row.appendChild(responseTime);
     }
-
 
     if (opts.meta) {
-
       const meta = document.createElement('div');
-
       meta.className = 'meta-line';
-
-      meta.style.textAlign =
-        role === 'user' ? 'right' : 'left';
-
+      meta.style.textAlign = role === 'user' ? 'right' : 'left';
       meta.textContent = opts.meta;
-
-      chatArea.appendChild(meta);
+      row.appendChild(meta);
     }
 
-
-    chatArea.scrollTop =
-      chatArea.scrollHeight;
+    chatArea.appendChild(row);
+    chatArea.scrollTop = chatArea.scrollHeight;
   }
-
 
   function setStatus(text, mode) {
-
-    statusLine.textContent =
-      text || '';
-
-    statusLine.className =
-      'status-line' +
-      (mode ? ' ' + mode : '');
+    statusLine.textContent = text || '';
+    statusLine.className = 'status-line' + (mode ? ' ' + mode : '');
   }
 
-
   function speak(text) {
-
     try {
-
-      if (!('speechSynthesis' in window)) {
-        return;
-      }
-
+      if (!('speechSynthesis' in window)) return;
       window.speechSynthesis.cancel();
-
-      const utter =
-        new SpeechSynthesisUtterance(text);
-
+      const utter = new SpeechSynthesisUtterance(text);
       utter.rate = 1.0;
-
       window.speechSynthesis.speak(utter);
-
     } catch (e) {
-      // Speech synthesis unavailable.
+      // Speech synthesis unavailable
     }
   }
 
-
   async function pollJobStatus(baseUrl, jobId, maxAttempts) {
+    maxAttempts = maxAttempts || 20;
 
-    maxAttempts =
-      maxAttempts || 20;
-
-    for (
-      let attempt = 0;
-      attempt < maxAttempts;
-      attempt++
-    ) {
-
-      await new Promise((resolve) =>
-        setTimeout(resolve, 1000)
-      );
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       try {
-
         const resp = await fetch(
-          baseUrl +
-          '/listen/status?job_id=' +
-          encodeURIComponent(jobId)
+          baseUrl + '/listen/status?job_id=' + encodeURIComponent(jobId)
         );
-
         const data = await resp.json();
 
         if (data.status === 'pending') {
           continue;
         }
 
-        return {
-          ok: resp.ok,
-          data
-        };
-
+        return { ok: resp.ok, data };
       } catch (err) {
-
         return {
           ok: false,
           data: {
-            error:
-              'Could not reach backend while polling: ' +
-              err.message
+            error: 'Could not reach backend while polling: ' + err.message
           }
         };
       }
     }
 
-
     return {
       ok: false,
-      data: {
-        error:
-          'Timed out waiting for a reply.'
-      }
+      data: { error: 'Timed out waiting for a reply.' }
     };
   }
 
-
   async function sendToListen(blob, mimeType, label) {
+    const baseUrl = getBaseUrl();
+    const startTime = performance.now();
 
-    const baseUrl =
-      getBaseUrl();
-
-    /*
-     * Start timer before sending the voice request.
-     */
-    const startTime =
-      performance.now();
-
-
-    addBubble(
-      'user',
-      label || '🎤 (voice message)'
-    );
-
-
-    setStatus(
-      'Uploading...',
-      'busy'
-    );
-
+    addBubble('user', label || '🎤 (voice message)');
+    setStatus('Uploading...', 'busy');
 
     micBtn.disabled = true;
     uploadBtn.disabled = true;
     sendTextBtn.disabled = true;
 
-
     try {
-
-      const resp = await fetch(
-        baseUrl + '/listen',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type':
-              mimeType || 'audio/webm'
-          },
-          body: blob,
-        }
-      );
-
+      const resp = await fetch(baseUrl + '/listen', {
+        method: 'POST',
+        headers: { 'Content-Type': mimeType || 'audio/webm' },
+        body: blob,
+      });
 
       const data = await resp.json();
 
-
       if (!resp.ok) {
-
         addBubble(
           'bot',
-          data.error ||
-            ('Server error (' +
-              resp.status +
-              ')'),
-          {
-            error: true
-          }
+          data.error || ('Server error (' + resp.status + ')'),
+          { error: true }
         );
-
         return;
       }
 
-
-      if (
-        data.status === 'pending' &&
-        data.job_id
-      ) {
-
+      if (data.status === 'pending' && data.job_id) {
         if (data.message) {
-          addBubble(
-            'bot',
-            data.message
-          );
+          addBubble('bot', data.message);
         }
 
+        setStatus('Doraemon is thinking...', 'busy');
 
-        setStatus(
-          'Doraemon is thinking...',
-          'busy'
-        );
-
-
-        const result =
-          await pollJobStatus(
-            baseUrl,
-            data.job_id
-          );
-
+        const result = await pollJobStatus(baseUrl, data.job_id);
 
         if (!result.ok) {
-
           addBubble(
             'bot',
-            result.data.error ||
-              'Something went wrong while waiting for a reply.',
-            {
-              error: true
-            }
+            result.data.error || 'Something went wrong while waiting for a reply.',
+            { error: true }
           );
-
           return;
         }
 
+        const finalData = result.data;
 
-        const finalData =
-          result.data;
-
-
-        if (
-          finalData.status === 'error'
-        ) {
-
+        if (finalData.status === 'error') {
           addBubble(
             'bot',
-            finalData.error ||
-              'Transcription or reply failed.',
-            {
-              error: true
-            }
+            finalData.error || 'Transcription or reply failed.',
+            { error: true }
           );
-
           return;
         }
-
 
         if (finalData.heard) {
-
-          const heardRow =
-            document.createElement('div');
-
-          heardRow.className =
-            'meta-line';
-
-          heardRow.style.textAlign =
-            'right';
-
-          heardRow.textContent =
-            'Heard: "' +
-            finalData.heard +
-            '"';
-
-          chatArea.appendChild(
-            heardRow
-          );
+          const heardRow = document.createElement('div');
+          heardRow.className = 'meta-line';
+          heardRow.style.textAlign = 'right';
+          heardRow.textContent = 'Heard: "' + finalData.heard + '"';
+          chatArea.appendChild(heardRow);
         }
 
-
-        const cmd =
-          finalData.command || {};
-
-
-        /*
-         * Stop timer when the complete backend
-         * response has arrived.
-         */
-        const responseTime =
-          performance.now() - startTime;
-
+        const cmd = finalData.command || {};
+        const responseTime = performance.now() - startTime;
 
         addBubble(
           'bot',
-          finalData.response ||
-            '(no reply text)',
+          finalData.response || '(no reply text)',
           {
-            commandType:
-              cmd.type,
-
-            direction:
-              cmd.direction,
-
-            responseTime:
-              responseTime
+            commandType: cmd.type,
+            direction: cmd.direction,
+            responseTime: responseTime
           }
         );
 
-
-        if (finalData.response) {
+        if (cmd.type === 'play_song') {
+          playDoraemonSong();
+        } else if (finalData.response) {
           speak(finalData.response);
         }
 
         return;
       }
 
-
       if (data.heard) {
-
-        const heardRow =
-          document.createElement('div');
-
-        heardRow.className =
-          'meta-line';
-
-        heardRow.style.textAlign =
-          'right';
-
-        heardRow.textContent =
-          'Heard: "' +
-          data.heard +
-          '"';
-
-        chatArea.appendChild(
-          heardRow
-        );
+        const heardRow = document.createElement('div');
+        heardRow.className = 'meta-line';
+        heardRow.style.textAlign = 'right';
+        heardRow.textContent = 'Heard: "' + data.heard + '"';
+        chatArea.appendChild(heardRow);
       }
 
-
-      const cmd =
-        data.command || {};
-
-
-      const responseTime =
-        performance.now() - startTime;
-
+      const cmd = data.command || {};
+      const responseTime = performance.now() - startTime;
 
       addBubble(
         'bot',
-        data.response ||
-          '(no reply text)',
+        data.response || '(no reply text)',
         {
-          commandType:
-            cmd.type,
-
-          direction:
-            cmd.direction,
-
-          responseTime:
-            responseTime
+          commandType: cmd.type,
+          direction: cmd.direction,
+          responseTime: responseTime
         }
       );
 
-
-      if (data.response) {
+      if (cmd.type === 'play_song') {
+        playDoraemonSong();
+      } else if (data.response) {
         speak(data.response);
       }
 
-
     } catch (err) {
-
       addBubble(
         'bot',
-        'Could not reach backend: ' +
-          err.message,
-        {
-          error: true
-        }
+        'Could not reach backend: ' + err.message,
+        { error: true }
       );
-
     } finally {
-
       setStatus('');
-
       micBtn.disabled = false;
       uploadBtn.disabled = false;
       sendTextBtn.disabled = false;
     }
   }
 
-
   async function sendTextMessage(message) {
+    const baseUrl = getBaseUrl();
+    const startTime = performance.now();
 
-    const baseUrl =
-      getBaseUrl();
-
-
-    /*
-     * Start timer immediately before sending
-     * the request to the backend.
-     */
-    const startTime =
-      performance.now();
-
-
-    addBubble(
-      'user',
-      message
-    );
-
-
-    setStatus(
-      'Doraemon is thinking...',
-      'busy'
-    );
-
+    addBubble('user', message);
+    setStatus('Doraemon is thinking...', 'busy');
 
     micBtn.disabled = true;
     sendTextBtn.disabled = true;
 
-
     try {
+      const resp = await fetch(baseUrl + '/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: message }),
+      });
 
-      const resp = await fetch(
-        baseUrl + '/chat',
-        {
-          method: 'POST',
-
-          headers: {
-            'Content-Type':
-              'application/json'
-          },
-
-          body: JSON.stringify({
-            message: message
-          }),
-        }
-      );
-
-
-      const data =
-        await resp.json();
-
+      const data = await resp.json();
 
       if (!resp.ok) {
-
         addBubble(
           'bot',
-          data.error ||
-            ('Server error (' +
-              resp.status +
-              ')'),
-          {
-            error: true
-          }
+          data.error || ('Server error (' + resp.status + ')'),
+          { error: true }
         );
-
       } else {
-
-        const cmd =
-          data.command || {};
-
-
-        /*
-         * Calculate total response time.
-         */
-        const responseTime =
-          performance.now() - startTime;
-
+        const cmd = data.command || {};
+        const responseTime = performance.now() - startTime;
 
         addBubble(
           'bot',
-          data.response ||
-            '(no reply text)',
+          data.response || '(no reply text)',
           {
-            commandType:
-              cmd.type,
-
-            direction:
-              cmd.direction,
-
-            responseTime:
-              responseTime
+            commandType: cmd.type,
+            direction: cmd.direction,
+            responseTime: responseTime
           }
         );
 
-
-        if (data.response) {
+        if (cmd.type === 'play_song') {
+          playDoraemonSong();
+        } else if (data.response) {
           speak(data.response);
         }
       }
-
-
     } catch (err) {
-
       addBubble(
         'bot',
-        'Could not reach backend: ' +
-          err.message,
-        {
-          error: true
-        }
+        'Could not reach backend: ' + err.message,
+        { error: true }
       );
-
     } finally {
-
       setStatus('');
-
       micBtn.disabled = false;
       sendTextBtn.disabled = false;
     }
   }
 
-
   // ---------- Recording logic ----------
-
   let mediaRecorder = null;
   let audioChunks = [];
   let isRecording = false;
   let stream = null;
 
-
   async function startRecording() {
-
-    const isSecure =
-      window.isSecureContext;
-
+    const isSecure = window.isSecureContext;
 
     if (!isSecure) {
-
       addBubble(
         'bot',
         'Mic access needs a secure page (https://) or a localhost page. Use the "📁 Upload" button instead or open this page from its https link.',
-        {
-          error: true
-        }
+        { error: true }
       );
-
       return;
     }
 
-
-    if (
-      !navigator.mediaDevices ||
-      !navigator.mediaDevices.getUserMedia
-    ) {
-
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       addBubble(
         'bot',
         'This browser does not support microphone recording. Try the "📁 Upload" button instead.',
-        {
-          error: true
-        }
+        { error: true }
       );
-
       return;
     }
-
 
     try {
-
-      stream =
-        await navigator.mediaDevices.getUserMedia({
-          audio: true
-        });
-
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch (err) {
-
-      let msg =
-        'Microphone access failed: ' +
-        err.name +
-        '.';
-
-
-      if (
-        err.name ===
-        'NotAllowedError'
-      ) {
-
-        msg =
-          'Microphone permission was denied. Tap the lock/info icon next to the address bar → Permissions → Microphone → Allow, then try again.';
-
-      } else if (
-        err.name ===
-        'NotFoundError'
-      ) {
-
-        msg =
-          'No microphone was found on this device.';
+      let msg = 'Microphone access failed: ' + err.name + '.';
+      if (err.name === 'NotAllowedError') {
+        msg = 'Microphone permission was denied. Tap the lock/info icon next to the address bar → Permissions → Microphone → Allow, then try again.';
+      } else if (err.name === 'NotFoundError') {
+        msg = 'No microphone was found on this device.';
       }
-
-
-      addBubble(
-        'bot',
-        msg,
-        {
-          error: true
-        }
-      );
-
-
+      addBubble('bot', msg, { error: true });
       setStatus('');
-
       return;
     }
-
 
     audioChunks = [];
+    let mimeType = 'audio/webm';
 
-
-    let mimeType =
-      'audio/webm';
-
-
-    if (
-      window.MediaRecorder &&
-      MediaRecorder.isTypeSupported
-    ) {
-
-      if (
-        MediaRecorder.isTypeSupported(
-          'audio/webm;codecs=opus'
-        )
-      ) {
-
-        mimeType =
-          'audio/webm;codecs=opus';
-
-      } else if (
-        MediaRecorder.isTypeSupported(
-          'audio/mp4'
-        )
-      ) {
-
-        mimeType =
-          'audio/mp4';
+    if (window.MediaRecorder && MediaRecorder.isTypeSupported) {
+      if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+        mimeType = 'audio/webm;codecs=opus';
+      } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+        mimeType = 'audio/mp4';
       }
     }
-
 
     try {
-
-      mediaRecorder =
-        new MediaRecorder(
-          stream,
-          {
-            mimeType:
-              mimeType
-          }
-        );
-
+      mediaRecorder = new MediaRecorder(stream, { mimeType: mimeType });
     } catch (e) {
-
-      mediaRecorder =
-        new MediaRecorder(stream);
+      mediaRecorder = new MediaRecorder(stream);
     }
 
+    mediaRecorder.ondataavailable = (e) => {
+      if (e.data && e.data.size > 0) {
+        audioChunks.push(e.data);
+      }
+    };
 
-    mediaRecorder.ondataavailable =
-      (e) => {
+    mediaRecorder.onstop = () => {
+      if (stream) {
+        stream.getTracks().forEach((t) => t.stop());
+        stream = null;
+      }
 
-        if (
-          e.data &&
-          e.data.size > 0
-        ) {
+      const finalType = mediaRecorder.mimeType || mimeType;
+      const blob = new Blob(audioChunks, { type: finalType });
 
-          audioChunks.push(
-            e.data
-          );
-        }
-      };
-
-
-    mediaRecorder.onstop =
-      () => {
-
-        if (stream) {
-
-          stream
-            .getTracks()
-            .forEach((t) =>
-              t.stop()
-            );
-
-          stream = null;
-        }
-
-
-        const finalType =
-          mediaRecorder.mimeType ||
-          mimeType;
-
-
-        const blob =
-          new Blob(
-            audioChunks,
-            {
-              type:
-                finalType
-            }
-          );
-
-
-        if (blob.size > 0) {
-
-          sendToListen(
-            blob,
-            finalType
-          );
-
-        } else {
-
-          setStatus(
-            'No audio captured — try again.',
-            'recording'
-          );
-
-
-          setTimeout(
-            () =>
-              setStatus(''),
-            1800
-          );
-        }
-      };
-
+      if (blob.size > 0) {
+        sendToListen(blob, finalType);
+      } else {
+        setStatus('No audio captured — try again.', 'recording');
+        setTimeout(() => setStatus(''), 1800);
+      }
+    };
 
     mediaRecorder.start();
-
     isRecording = true;
-
-    micBtn.classList.add(
-      'recording'
-    );
-
-    micBtn.textContent =
-      '⏹';
-
-
-    setStatus(
-      'Recording... tap again to stop',
-      'recording'
-    );
+    micBtn.classList.add('recording');
+    micBtn.textContent = '⏹';
+    setStatus('Recording... tap again to stop', 'recording');
   }
-
 
   function stopRecording() {
-
-    if (
-      mediaRecorder &&
-      isRecording
-    ) {
-
+    if (mediaRecorder && isRecording) {
       mediaRecorder.stop();
     }
-
-
     isRecording = false;
-
-    micBtn.classList.remove(
-      'recording'
-    );
-
-    micBtn.textContent =
-      '🎤';
+    micBtn.classList.remove('recording');
+    micBtn.textContent = '🎤';
   }
 
-
-  micBtn.addEventListener(
-    'click',
-    () => {
-
-      if (isRecording) {
-
-        stopRecording();
-
-      } else {
-
-        startRecording();
-      }
+  micBtn.addEventListener('click', () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
     }
-  );
-
+  });
 
   function guessMimeType(file) {
-
-    if (file.type) {
-      return file.type;
-    }
-
-
-    const name =
-      file.name.toLowerCase();
-
-
-    if (name.endsWith('.mp4')) {
-      return 'audio/mp4';
-    }
-
-    if (name.endsWith('.m4a')) {
-      return 'audio/mp4';
-    }
-
-    if (name.endsWith('.wav')) {
-      return 'audio/wav';
-    }
-
-    if (name.endsWith('.mp3')) {
-      return 'audio/mpeg';
-    }
-
-    if (name.endsWith('.webm')) {
-      return 'audio/webm';
-    }
-
-    if (name.endsWith('.ogg')) {
-      return 'audio/ogg';
-    }
-
-
+    if (file.type) return file.type;
+    const name = file.name.toLowerCase();
+    if (name.endsWith('.mp4')) return 'audio/mp4';
+    if (name.endsWith('.m4a')) return 'audio/mp4';
+    if (name.endsWith('.wav')) return 'audio/wav';
+    if (name.endsWith('.mp3')) return 'audio/mpeg';
+    if (name.endsWith('.webm')) return 'audio/webm';
+    if (name.endsWith('.ogg')) return 'audio/ogg';
     return 'application/octet-stream';
   }
 
+  uploadBtn.addEventListener('click', () => {
+    fileInput.click();
+  });
 
-  uploadBtn.addEventListener(
-    'click',
-    () => {
-      fileInput.click();
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files && fileInput.files[0];
+    fileInput.value = '';
+    if (!file) return;
+    const mimeType = guessMimeType(file);
+    sendToListen(file, mimeType, '📁 ' + file.name);
+  });
+
+  sendTextBtn.addEventListener('click', () => {
+    const msg = textInput.value.trim();
+    if (!msg) return;
+    textInput.value = '';
+    sendTextMessage(msg);
+  });
+
+  textInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      sendTextBtn.click();
     }
-  );
+  });
 
-
-  fileInput.addEventListener(
-    'change',
-    () => {
-
-      const file =
-        fileInput.files &&
-        fileInput.files[0];
-
-
-      fileInput.value = '';
-
-
-      if (!file) {
-        return;
-      }
-
-
-      const mimeType =
-        guessMimeType(file);
-
-
-      sendToListen(
-        file,
-        mimeType,
-        '📁 ' + file.name
-      );
+  clearChatBtn.addEventListener('click', () => {
+    if (currentSongAudio) {
+      currentSongAudio.pause();
+      currentSongAudio.currentTime = 0;
     }
-  );
-
-
-  sendTextBtn.addEventListener(
-    'click',
-    () => {
-
-      const msg =
-        textInput.value.trim();
-
-
-      if (!msg) {
-        return;
-      }
-
-
-      textInput.value = '';
-
-
-      sendTextMessage(msg);
-    }
-  );
-
-
-  textInput.addEventListener(
-    'keydown',
-    (e) => {
-
-      if (e.key === 'Enter') {
-        sendTextBtn.click();
-      }
-    }
-  );
-
-
-  clearChatBtn.addEventListener(
-    'click',
-    () => {
-
-      chatArea.innerHTML = '';
-
-
-      const fresh =
-        document.createElement(
-          'div'
-        );
-
-
-      fresh.className =
-        'empty-state';
-
-
-      fresh.id =
-        'emptyState';
-
-
-      fresh.innerHTML =
-        '<span class="emoji">🎙️</span>' +
-        '<p>Tap the mic and say something like "hi" or "move forward" — or type a message below. Doraemon\'s reply will show up here.</p>';
-
-
-      chatArea.appendChild(
-        fresh
-      );
-    }
-  );
+    chatArea.innerHTML = '';
+    const fresh = document.createElement('div');
+    fresh.className = 'empty-state';
+    fresh.id = 'emptyState';
+    fresh.innerHTML =
+      '<span class="emoji">🎙️</span>' +
+      '<p>Tap the mic and say something like "hi" or "move forward" — or type a message below. Doraemon\'s reply will show up here.</p>';
+    chatArea.appendChild(fresh);
+  });
 
 })();
 </script>
