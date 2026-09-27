@@ -56,20 +56,12 @@
     --bubble-bot-text: #f1f2f6;
   }
 
-  * {
-    box-sizing: border-box;
-  }
-
-  html, body {
-    height: 100%;
-    margin: 0;
-  }
-
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-      Helvetica, Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     display: flex;
     flex-direction: column;
     min-height: 100%;
@@ -80,18 +72,8 @@
     text-align: center;
     flex-shrink: 0;
   }
-
-  header h1 {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 700;
-  }
-
-  header p {
-    margin: 4px 0 0;
-    color: var(--muted);
-    font-size: 0.8rem;
-  }
+  header h1 { margin: 0; font-size: 1.25rem; font-weight: 700; }
+  header p { margin: 4px 0 0; color: var(--muted); font-size: 0.8rem; }
 
   main {
     flex: 1;
@@ -109,32 +91,12 @@
     color: var(--muted);
     padding: 24px;
   }
+  .empty-state .emoji { font-size: 2.5rem; display: block; margin-bottom: 8px; }
+  .empty-state p { font-size: 0.85rem; line-height: 1.5; max-width: 260px; margin: 0 auto; }
 
-  .empty-state .emoji {
-    font-size: 2.5rem;
-    display: block;
-    margin-bottom: 8px;
-  }
-
-  .empty-state p {
-    font-size: 0.85rem;
-    line-height: 1.5;
-    max-width: 260px;
-    margin: 0 auto;
-  }
-
-  .bubble-row {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .bubble-row.user {
-    align-items: flex-end;
-  }
-
-  .bubble-row.bot {
-    align-items: flex-start;
-  }
+  .bubble-row { display: flex; flex-direction: column; }
+  .bubble-row.user { align-items: flex-end; }
+  .bubble-row.bot { align-items: flex-start; }
 
   .bubble {
     max-width: 82%;
@@ -145,19 +107,8 @@
     white-space: pre-wrap;
     word-break: break-word;
   }
-
-  .bubble.user {
-    background: var(--bubble-user);
-    color: var(--bubble-user-text);
-    border-bottom-right-radius: 4px;
-  }
-
-  .bubble.bot {
-    background: var(--bubble-bot);
-    color: var(--bubble-bot-text);
-    border-bottom-left-radius: 4px;
-  }
-
+  .bubble.user { background: var(--bubble-user); color: var(--bubble-user-text); border-bottom-right-radius: 4px; }
+  .bubble.bot { background: var(--bubble-bot); color: var(--bubble-bot-text); border-bottom-left-radius: 4px; }
   .bubble.bot .tag {
     display: block;
     font-size: 0.68rem;
@@ -166,32 +117,13 @@
     margin-bottom: 3px;
     letter-spacing: 0.02em;
   }
-
-  .bubble.error {
-    background: #fee2e2;
-    color: #991b1b;
-    border-bottom-left-radius: 4px;
-  }
-
+  .bubble.error { background: #fee2e2; color: #991b1b; border-bottom-left-radius: 4px; }
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .bubble.error {
-      background: #3f1616;
-      color: #fca5a5;
-    }
+    :root:not([data-theme="light"]) .bubble.error { background: #3f1616; color: #fca5a5; }
   }
+  :root[data-theme="dark"] .bubble.error { background: #3f1616; color: #fca5a5; }
 
-  :root[data-theme="dark"] .bubble.error {
-    background: #3f1616;
-    color: #fca5a5;
-  }
-
-  .meta-line {
-    font-size: 0.68rem;
-    color: var(--muted);
-    margin-top: 4px;
-    padding: 0 4px;
-  }
-
+  .meta-line { font-size: 0.68rem; color: var(--muted); margin-top: 4px; padding: 0 4px; }
   .response-time {
     display: flex;
     align-items: center;
@@ -227,29 +159,11 @@
     margin-bottom: 10px;
     min-height: 1.1em;
   }
+  .status-line.recording { color: var(--danger); font-weight: 600; }
+  .status-line.busy { color: var(--accent); font-weight: 600; }
 
-  .status-line.recording {
-    color: var(--danger);
-    font-weight: 600;
-  }
-
-  .status-line.busy {
-    color: var(--accent);
-    font-weight: 600;
-  }
-
-  .controls {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .text-fallback {
-    flex: 1;
-    display: flex;
-    gap: 8px;
-  }
-
+  .controls { display: flex; align-items: center; gap: 10px; }
+  .text-fallback { flex: 1; display: flex; gap: 8px; }
   .text-fallback input {
     flex: 1;
     padding: 11px 14px;
@@ -274,11 +188,7 @@
     cursor: pointer;
     flex-shrink: 0;
   }
-
-  .send-btn:disabled {
-    opacity: 0.5;
-    cursor: default;
-  }
+  .send-btn:disabled { opacity: 0.5; cursor: default; }
 
   .mic-btn {
     width: 58px;
@@ -296,18 +206,13 @@
     box-shadow: 0 3px 10px rgba(37, 99, 235, 0.35);
     transition: transform 0.15s ease, background 0.15s ease;
   }
-
   .mic-btn.recording {
     background: var(--danger);
     box-shadow: 0 3px 14px rgba(220, 38, 38, 0.45);
     transform: scale(1.08);
     animation: pulse 1.2s infinite;
   }
-
-  .mic-btn:disabled {
-    opacity: 0.5;
-    cursor: default;
-  }
+  .mic-btn:disabled { opacity: 0.5; cursor: default; }
 
   .upload-btn {
     width: 46px;
@@ -319,22 +224,12 @@
   }
 
   @keyframes pulse {
-    0% {
-      box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.45);
-    }
-    70% {
-      box-shadow: 0 0 0 12px rgba(220, 38, 38, 0);
-    }
-    100% {
-      box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
-    }
+    0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.45); }
+    70% { box-shadow: 0 0 0 12px rgba(220, 38, 38, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
   }
 
-  .mode-toggle {
-    text-align: center;
-    margin-top: 10px;
-  }
-
+  .mode-toggle { text-align: center; margin-top: 10px; }
   .mode-toggle button {
     background: none;
     border: none;
@@ -345,9 +240,18 @@
     padding: 4px;
   }
 
-  .hidden {
-    display: none !important;
+  /* Hidden embedded YouTube player container */
+  #playerContainer {
+    position: fixed;
+    bottom: -200px;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    opacity: 0.01;
+    pointer-events: none;
   }
+
+  .hidden { display: none !important; }
 </style>
 </head>
 
@@ -362,8 +266,8 @@
   <div class="empty-state" id="emptyState">
     <span class="emoji">🎙️</span>
     <p>
-      Tap the mic and say something like "hi" or "move forward" —
-      or type a message below. Doraemon's reply will show up here.
+      Tap the mic and say something like "hi", "move forward", or "play Doraemon song" —
+      or type a message below.
     </p>
   </div>
 </main>
@@ -373,40 +277,50 @@
 
   <div class="controls" id="voiceControls">
     <button class="mic-btn" id="micBtn" title="Hold to record">🎤</button>
-
-    <button
-      class="mic-btn upload-btn"
-      id="uploadBtn"
-      title="Upload an audio/video file"
-    >📁</button>
+    <button class="mic-btn upload-btn" id="uploadBtn" title="Upload an audio/video file">📁</button>
 
     <div class="text-fallback">
-      <input
-        type="text"
-        id="textInput"
-        placeholder="...or type a message"
-      />
+      <input type="text" id="textInput" placeholder="...or type a message" />
       <button class="send-btn" id="sendTextBtn">➤</button>
     </div>
   </div>
 
-  <input
-    type="file"
-    id="fileInput"
-    accept="audio/*,video/mp4,.mp4,.m4a,.wav,.mp3,.webm"
-    class="hidden"
-  />
+  <input type="file" id="fileInput" accept="audio/*,video/mp4,.mp4,.m4a,.wav,.mp3,.webm" class="hidden" />
 
   <div class="mode-toggle">
-    <button id="clearChatBtn">Clear conversation</button>
+    <button id="clearChatBtn">Clear conversation & stop music</button>
   </div>
 </footer>
 
-<script>
-(function () {
+<!-- Container for inline YouTube playback -->
+<div id="playerContainer">
+  <div id="ytPlayer"></div>
+</div>
 
-  const BACKEND_BASE_URL =
-    "https://robot-backend-flask-server--manishgupta80.replit.app";
+<!-- Load YouTube IFrame Player API -->
+<script src="https://www.youtube.com/iframe_api"></script>
+
+<script>
+let ytPlayer = null;
+let ytApiReady = false;
+
+function onYouTubeIframeAPIReady() {
+  ytPlayer = new YT.Player('ytPlayer', {
+    height: '1',
+    width: '1',
+    playerVars: {
+      'autoplay': 1,
+      'controls': 0,
+      'playsinline': 1
+    },
+    events: {
+      'onReady': () => { ytApiReady = true; }
+    }
+  });
+}
+
+(function () {
+  const BACKEND_BASE_URL = "https://robot-backend-flask-server--manishgupta80.replit.app";
 
   const chatArea = document.getElementById('chatArea');
   const emptyState = document.getElementById('emptyState');
@@ -430,33 +344,48 @@
     }
   }
 
-  function playDoraemonSong() {
+  function stopAllAudio() {
     if (currentSongAudio) {
       currentSongAudio.pause();
       currentSongAudio.currentTime = 0;
+      currentSongAudio = null;
     }
+    if (ytPlayer && typeof ytPlayer.stopVideo === 'function') {
+      ytPlayer.stopVideo();
+    }
+  }
+
+  function playDoraemonSong() {
+    stopAllAudio();
     const songUrl = getBaseUrl() + '/song';
     currentSongAudio = new Audio(songUrl);
     currentSongAudio.play().catch((err) => {
-      console.warn("Autoplay prevented or failed:", err);
-      addBubble('bot', 'Tap to play the Doraemon song 🎵', {
-        meta: 'Tap to start playback'
-      });
+      console.warn("Autoplay prevented:", err);
+      addBubble('bot', 'Tap to play the Doraemon song 🎵', { meta: 'Tap to start playback' });
     });
   }
 
-  function playYouTube(query) {
-    const cleanQuery = encodeURIComponent(query || 'doraemon theme song');
-    const ytUrl = `https://www.youtube.com/results?search_query=${cleanQuery}`;
-    window.open(ytUrl, '_blank');
+  function playYouTubeInPage(query) {
+    stopAllAudio();
+    const searchTerm = query || 'doraemon theme song hindi';
+    
+    // Uses YouTube search list embed to play the top match automatically
+    if (ytPlayer && typeof ytPlayer.loadPlaylist === 'function') {
+      ytPlayer.loadPlaylist({
+        listType: 'search',
+        list: searchTerm,
+        index: 0
+      });
+    } else {
+      // Fallback: update iframe source directly
+      const container = document.getElementById('playerContainer');
+      container.innerHTML = `<iframe width="1" height="1" src="https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(searchTerm)}&autoplay=1" allow="autoplay"></iframe>`;
+    }
   }
 
   function formatResponseTime(milliseconds) {
     const seconds = milliseconds / 1000;
-    if (seconds < 1) {
-      return Math.round(milliseconds) + ' ms';
-    }
-    return seconds.toFixed(2) + ' s';
+    return seconds < 1 ? Math.round(milliseconds) + ' ms' : seconds.toFixed(2) + ' s';
   }
 
   function addBubble(role, text, opts) {
@@ -483,26 +412,17 @@
     if (opts.commandType && opts.commandType !== 'none') {
       const chip = document.createElement('span');
       chip.className = 'command-chip';
-      chip.textContent =
-        '⚙ command: ' +
-        opts.commandType +
-        (opts.direction ? ' (' + opts.direction + ')' : '');
-
+      chip.textContent = '⚙ command: ' + opts.commandType + (opts.direction ? ' (' + opts.direction + ')' : '');
       bubble.appendChild(document.createElement('br'));
       bubble.appendChild(chip);
     }
 
     row.appendChild(bubble);
 
-    if (
-      role === 'bot' &&
-      !opts.error &&
-      typeof opts.responseTime === 'number'
-    ) {
+    if (role === 'bot' && !opts.error && typeof opts.responseTime === 'number') {
       const responseTime = document.createElement('div');
       responseTime.className = 'response-time';
-      responseTime.textContent =
-        '⚡ ' + formatResponseTime(opts.responseTime);
+      responseTime.textContent = '⚡ ' + formatResponseTime(opts.responseTime);
       row.appendChild(responseTime);
     }
 
@@ -530,42 +450,23 @@
       const utter = new SpeechSynthesisUtterance(text);
       utter.rate = 1.0;
       window.speechSynthesis.speak(utter);
-    } catch (e) {
-      // Speech synthesis unavailable
-    }
+    } catch (e) {}
   }
 
   async function pollJobStatus(baseUrl, jobId, maxAttempts) {
     maxAttempts = maxAttempts || 20;
-
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-
       try {
-        const resp = await fetch(
-          baseUrl + '/listen/status?job_id=' + encodeURIComponent(jobId)
-        );
+        const resp = await fetch(baseUrl + '/listen/status?job_id=' + encodeURIComponent(jobId));
         const data = await resp.json();
-
-        if (data.status === 'pending') {
-          continue;
-        }
-
+        if (data.status === 'pending') continue;
         return { ok: resp.ok, data };
       } catch (err) {
-        return {
-          ok: false,
-          data: {
-            error: 'Could not reach backend while polling: ' + err.message
-          }
-        };
+        return { ok: false, data: { error: 'Could not reach backend: ' + err.message } };
       }
     }
-
-    return {
-      ok: false,
-      data: { error: 'Timed out waiting for a reply.' }
-    };
+    return { ok: false, data: { error: 'Timed out waiting for a reply.' } };
   }
 
   async function sendToListen(blob, mimeType, label) {
@@ -587,42 +488,24 @@
       });
 
       const data = await resp.json();
-
       if (!resp.ok) {
-        addBubble(
-          'bot',
-          data.error || ('Server error (' + resp.status + ')'),
-          { error: true }
-        );
+        addBubble('bot', data.error || ('Server error (' + resp.status + ')'), { error: true });
         return;
       }
 
       if (data.status === 'pending' && data.job_id) {
-        if (data.message) {
-          addBubble('bot', data.message);
-        }
-
+        if (data.message) addBubble('bot', data.message);
         setStatus('Doraemon is thinking...', 'busy');
 
         const result = await pollJobStatus(baseUrl, data.job_id);
-
         if (!result.ok) {
-          addBubble(
-            'bot',
-            result.data.error || 'Something went wrong while waiting for a reply.',
-            { error: true }
-          );
+          addBubble('bot', result.data.error || 'Waiting for reply failed.', { error: true });
           return;
         }
 
         const finalData = result.data;
-
         if (finalData.status === 'error') {
-          addBubble(
-            'bot',
-            finalData.error || 'Transcription or reply failed.',
-            { error: true }
-          );
+          addBubble('bot', finalData.error || 'Failed.', { error: true });
           return;
         }
 
@@ -637,62 +520,40 @@
         const cmd = finalData.command || {};
         const responseTime = performance.now() - startTime;
 
-        addBubble(
-          'bot',
-          finalData.response || '(no reply text)',
-          {
-            commandType: cmd.type,
-            direction: cmd.direction,
-            responseTime: responseTime
-          }
-        );
+        addBubble('bot', finalData.response || '(no reply text)', {
+          commandType: cmd.type,
+          direction: cmd.direction,
+          responseTime: responseTime
+        });
 
         if (cmd.type === 'play_song') {
           playDoraemonSong();
         } else if (cmd.type === 'play_youtube') {
-          playYouTube(cmd.query);
+          playYouTubeInPage(cmd.query);
         } else if (finalData.response) {
           speak(finalData.response);
         }
-
         return;
-      }
-
-      if (data.heard) {
-        const heardRow = document.createElement('div');
-        heardRow.className = 'meta-line';
-        heardRow.style.textAlign = 'right';
-        heardRow.textContent = 'Heard: "' + data.heard + '"';
-        chatArea.appendChild(heardRow);
       }
 
       const cmd = data.command || {};
       const responseTime = performance.now() - startTime;
-
-      addBubble(
-        'bot',
-        data.response || '(no reply text)',
-        {
-          commandType: cmd.type,
-          direction: cmd.direction,
-          responseTime: responseTime
-        }
-      );
+      addBubble('bot', data.response || '(no reply text)', {
+        commandType: cmd.type,
+        direction: cmd.direction,
+        responseTime: responseTime
+      });
 
       if (cmd.type === 'play_song') {
         playDoraemonSong();
       } else if (cmd.type === 'play_youtube') {
-        playYouTube(cmd.query);
+        playYouTubeInPage(cmd.query);
       } else if (data.response) {
         speak(data.response);
       }
 
     } catch (err) {
-      addBubble(
-        'bot',
-        'Could not reach backend: ' + err.message,
-        { error: true }
-      );
+      addBubble('bot', 'Could not reach backend: ' + err.message, { error: true });
     } finally {
       setStatus('');
       micBtn.disabled = false;
@@ -719,41 +580,28 @@
       });
 
       const data = await resp.json();
-
       if (!resp.ok) {
-        addBubble(
-          'bot',
-          data.error || ('Server error (' + resp.status + ')'),
-          { error: true }
-        );
+        addBubble('bot', data.error || ('Server error (' + resp.status + ')'), { error: true });
       } else {
         const cmd = data.command || {};
         const responseTime = performance.now() - startTime;
 
-        addBubble(
-          'bot',
-          data.response || '(no reply text)',
-          {
-            commandType: cmd.type,
-            direction: cmd.direction,
-            responseTime: responseTime
-          }
-        );
+        addBubble('bot', data.response || '(no reply text)', {
+          commandType: cmd.type,
+          direction: cmd.direction,
+          responseTime: responseTime
+        });
 
         if (cmd.type === 'play_song') {
           playDoraemonSong();
         } else if (cmd.type === 'play_youtube') {
-          playYouTube(cmd.query);
+          playYouTubeInPage(cmd.query);
         } else if (data.response) {
           speak(data.response);
         }
       }
     } catch (err) {
-      addBubble(
-        'bot',
-        'Could not reach backend: ' + err.message,
-        { error: true }
-      );
+      addBubble('bot', 'Could not reach backend: ' + err.message, { error: true });
     } finally {
       setStatus('');
       micBtn.disabled = false;
@@ -768,49 +616,28 @@
   let stream = null;
 
   async function startRecording() {
-    const isSecure = window.isSecureContext;
-
-    if (!isSecure) {
-      addBubble(
-        'bot',
-        'Mic access needs a secure page (https://) or a localhost page. Use the "📁 Upload" button instead or open this page from its https link.',
-        { error: true }
-      );
+    if (!window.isSecureContext) {
+      addBubble('bot', 'Mic access needs a secure page (https://).', { error: true });
       return;
     }
-
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      addBubble(
-        'bot',
-        'This browser does not support microphone recording. Try the "📁 Upload" button instead.',
-        { error: true }
-      );
+      addBubble('bot', 'Microphone not supported on this browser.', { error: true });
       return;
     }
 
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch (err) {
-      let msg = 'Microphone access failed: ' + err.name + '.';
-      if (err.name === 'NotAllowedError') {
-        msg = 'Microphone permission was denied. Tap the lock/info icon next to the address bar → Permissions → Microphone → Allow, then try again.';
-      } else if (err.name === 'NotFoundError') {
-        msg = 'No microphone was found on this device.';
-      }
-      addBubble('bot', msg, { error: true });
+      addBubble('bot', 'Microphone access failed: ' + err.name, { error: true });
       setStatus('');
       return;
     }
 
     audioChunks = [];
     let mimeType = 'audio/webm';
-
     if (window.MediaRecorder && MediaRecorder.isTypeSupported) {
-      if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
-        mimeType = 'audio/webm;codecs=opus';
-      } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
-        mimeType = 'audio/mp4';
-      }
+      if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) mimeType = 'audio/webm;codecs=opus';
+      else if (MediaRecorder.isTypeSupported('audio/mp4')) mimeType = 'audio/mp4';
     }
 
     try {
@@ -820,9 +647,7 @@
     }
 
     mediaRecorder.ondataavailable = (e) => {
-      if (e.data && e.data.size > 0) {
-        audioChunks.push(e.data);
-      }
+      if (e.data && e.data.size > 0) audioChunks.push(e.data);
     };
 
     mediaRecorder.onstop = () => {
@@ -830,14 +655,12 @@
         stream.getTracks().forEach((t) => t.stop());
         stream = null;
       }
-
       const finalType = mediaRecorder.mimeType || mimeType;
       const blob = new Blob(audioChunks, { type: finalType });
-
       if (blob.size > 0) {
         sendToListen(blob, finalType);
       } else {
-        setStatus('No audio captured — try again.', 'recording');
+        setStatus('No audio captured.', 'recording');
         setTimeout(() => setStatus(''), 1800);
       }
     };
@@ -850,44 +673,33 @@
   }
 
   function stopRecording() {
-    if (mediaRecorder && isRecording) {
-      mediaRecorder.stop();
-    }
+    if (mediaRecorder && isRecording) mediaRecorder.stop();
     isRecording = false;
     micBtn.classList.remove('recording');
     micBtn.textContent = '🎤';
   }
 
   micBtn.addEventListener('click', () => {
-    if (isRecording) {
-      stopRecording();
-    } else {
-      startRecording();
-    }
+    if (isRecording) stopRecording();
+    else startRecording();
   });
 
   function guessMimeType(file) {
     if (file.type) return file.type;
     const name = file.name.toLowerCase();
-    if (name.endsWith('.mp4')) return 'audio/mp4';
-    if (name.endsWith('.m4a')) return 'audio/mp4';
+    if (name.endsWith('.mp4') || name.endsWith('.m4a')) return 'audio/mp4';
     if (name.endsWith('.wav')) return 'audio/wav';
     if (name.endsWith('.mp3')) return 'audio/mpeg';
     if (name.endsWith('.webm')) return 'audio/webm';
-    if (name.endsWith('.ogg')) return 'audio/ogg';
     return 'application/octet-stream';
   }
 
-  uploadBtn.addEventListener('click', () => {
-    fileInput.click();
-  });
-
+  uploadBtn.addEventListener('click', () => fileInput.click());
   fileInput.addEventListener('change', () => {
     const file = fileInput.files && fileInput.files[0];
     fileInput.value = '';
     if (!file) return;
-    const mimeType = guessMimeType(file);
-    sendToListen(file, mimeType, '📁 ' + file.name);
+    sendToListen(file, guessMimeType(file), '📁 ' + file.name);
   });
 
   sendTextBtn.addEventListener('click', () => {
@@ -898,26 +710,18 @@
   });
 
   textInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      sendTextBtn.click();
-    }
+    if (e.key === 'Enter') sendTextBtn.click();
   });
 
   clearChatBtn.addEventListener('click', () => {
-    if (currentSongAudio) {
-      currentSongAudio.pause();
-      currentSongAudio.currentTime = 0;
-    }
+    stopAllAudio();
     chatArea.innerHTML = '';
     const fresh = document.createElement('div');
     fresh.className = 'empty-state';
     fresh.id = 'emptyState';
-    fresh.innerHTML =
-      '<span class="emoji">🎙️</span>' +
-      '<p>Tap the mic and say something like "hi" or "move forward" — or type a message below. Doraemon\'s reply will show up here.</p>';
+    fresh.innerHTML = '<span class="emoji">🎙️</span><p>Tap the mic and say something like "hi", "move forward", or "play Doraemon song" — or type a message below.</p>';
     chatArea.appendChild(fresh);
   });
-
 })();
 </script>
 
