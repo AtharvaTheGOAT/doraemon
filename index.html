@@ -255,8 +255,7 @@
   <div class="empty-state" id="emptyState">
     <span class="emoji">🎙️</span>
     <p>
-      Tap the mic and say something like "hi", "move forward", or "play Believer" —
-      or type a message below.
+      Tap the mic and say something like "hi", "move forward", or ask for a song
     </p>
   </div>
 </main>
@@ -277,13 +276,14 @@
   <input type="file" id="fileInput" accept="audio/*,video/mp4,.mp4,.m4a,.wav,.mp3,.webm" class="hidden" />
 
   <div class="mode-toggle">
-    <button id="clearChatBtn">Clear conversation & stop music</button>
+    <button id="clearChatBtn">Clear conversation &amp; stop music</button>
   </div>
 </footer>
 
 <script>
 (function () {
   const BACKEND_BASE_URL = "https://robot-backend-flask-server--manishgupta80.replit.app";
+  const DEVICE_TOKEN = "doraemonproject"; // Matches ROBOT_DEVICE_TOKEN in Replit
 
   const chatArea = document.getElementById('chatArea');
   const emptyState = document.getElementById('emptyState');
@@ -324,14 +324,9 @@
     });
   }
 
-  function playDoraemonSong() {
-    const songUrl = getBaseUrl() + '/song';
+  function playDoraemonSong(track) {
+    const songUrl = getBaseUrl() + '/song?track=' + encodeURIComponent(track || 'random');
     playDirectAudio(songUrl);
-  }
-
-  function playYouTubeAudio(query) {
-    const streamUrl = getBaseUrl() + '/stream_audio?q=' + encodeURIComponent(query || 'doraemon theme song hindi');
-    playDirectAudio(streamUrl);
   }
 
   function formatResponseTime(milliseconds) {
@@ -363,7 +358,8 @@
     if (opts.commandType && opts.commandType !== 'none') {
       const chip = document.createElement('span');
       chip.className = 'command-chip';
-      chip.textContent = '⚙ command: ' + opts.commandType + (opts.direction ? ' (' + opts.direction + ')' : '');
+      const detail = opts.direction || opts.track || '';
+      chip.textContent = '⚙ command: ' + opts.commandType + (detail ? ' (' + detail + ')' : '');
       bubble.appendChild(document.createElement('br'));
       bubble.appendChild(chip);
     }
@@ -409,7 +405,9 @@
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       try {
-        const resp = await fetch(baseUrl + '/listen/status?job_id=' + encodeURIComponent(jobId));
+        const resp = await fetch(baseUrl + '/listen/status?job_id=' + encodeURIComponent(jobId), {
+          headers: { 'X-Robot-Token': DEVICE_TOKEN }
+        });
         const data = await resp.json();
         if (data.status === 'pending') continue;
         return { ok: resp.ok, data };
@@ -434,7 +432,10 @@
     try {
       const resp = await fetch(baseUrl + '/listen', {
         method: 'POST',
-        headers: { 'Content-Type': mimeType || 'audio/webm' },
+        headers: { 
+          'Content-Type': mimeType || 'audio/webm',
+          'X-Robot-Token': DEVICE_TOKEN 
+        },
         body: blob,
       });
 
@@ -474,33 +475,24 @@
         addBubble('bot', finalData.response || '(no reply text)', {
           commandType: cmd.type,
           direction: cmd.direction,
+          track: cmd.track,
           responseTime: responseTime
         });
 
         if (cmd.type === 'play_song') {
-          playDoraemonSong();
-        } else if (cmd.type === 'play_youtube') {
-          playYouTubeAudio(cmd.query);
+          playDoraemonSong(cmd.track);
+        } else if (finalData.reply_audio_base64) {
+          try {
+            stopAllAudio();
+            currentAudioPlayer = new Audio("data:audio/wav;base64," + finalData.reply_audio_base64);
+            currentAudioPlayer.play().catch(() => {});
+          } catch (e) {
+            if (finalData.response) speak(finalData.response);
+          }
         } else if (finalData.response) {
           speak(finalData.response);
         }
         return;
-      }
-
-      const cmd = data.command || {};
-      const responseTime = performance.now() - startTime;
-      addBubble('bot', data.response || '(no reply text)', {
-        commandType: cmd.type,
-        direction: cmd.direction,
-        responseTime: responseTime
-      });
-
-      if (cmd.type === 'play_song') {
-        playDoraemonSong();
-      } else if (cmd.type === 'play_youtube') {
-        playYouTubeAudio(cmd.query);
-      } else if (data.response) {
-        speak(data.response);
       }
 
     } catch (err) {
@@ -526,7 +518,10 @@
     try {
       const resp = await fetch(baseUrl + '/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-Robot-Token': DEVICE_TOKEN 
+        },
         body: JSON.stringify({ message: message }),
       });
 
@@ -540,13 +535,20 @@
         addBubble('bot', data.response || '(no reply text)', {
           commandType: cmd.type,
           direction: cmd.direction,
+          track: cmd.track,
           responseTime: responseTime
         });
 
         if (cmd.type === 'play_song') {
-          playDoraemonSong();
-        } else if (cmd.type === 'play_youtube') {
-          playYouTubeAudio(cmd.query);
+          playDoraemonSong(cmd.track);
+        } else if (data.reply_audio_base64) {
+          try {
+            stopAllAudio();
+            currentAudioPlayer = new Audio("data:audio/wav;base64," + data.reply_audio_base64);
+            currentAudioPlayer.play().catch(() => {});
+          } catch (e) {
+            if (data.response) speak(data.response);
+          }
         } else if (data.response) {
           speak(data.response);
         }
@@ -670,7 +672,7 @@
     const fresh = document.createElement('div');
     fresh.className = 'empty-state';
     fresh.id = 'emptyState';
-    fresh.innerHTML = '<span class="emoji">🎙️</span><p>Tap the mic and say something like "hi", "move forward", or "play Believer" — or type a message below.</p>';
+    fresh.innerHTML = '<span class="emoji">🎙️</span><p>Tap the mic and say something like "hi", "move forward", or ask for a song — or type a message below.</p>';
     chatArea.appendChild(fresh);
   });
 })();
