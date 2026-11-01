@@ -313,6 +313,9 @@
       currentAudioPlayer.currentTime = 0;
       currentAudioPlayer = null;
     }
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
   }
 
   function playDirectAudio(url) {
@@ -396,8 +399,11 @@
       window.speechSynthesis.cancel();
       const utter = new SpeechSynthesisUtterance(text);
       utter.rate = 1.0;
+      utter.pitch = 1.0;
       window.speechSynthesis.speak(utter);
-    } catch (e) {}
+    } catch (e) {
+      console.warn("Speech synthesis error:", e);
+    }
   }
 
   async function pollJobStatus(baseUrl, jobId, maxAttempts) {
@@ -416,6 +422,33 @@
       }
     }
     return { ok: false, data: { error: 'Timed out waiting for a reply.' } };
+  }
+
+  async function handleBotReply(finalData, responseTime) {
+    const cmd = finalData.command || {};
+
+    addBubble('bot', finalData.response || '(no reply text)', {
+      commandType: cmd.type,
+      direction: cmd.direction,
+      track: cmd.track,
+      responseTime: responseTime
+    });
+
+    if (cmd.type === 'play_song') {
+      playDoraemonSong(cmd.track);
+    } else if (finalData.reply_audio_base64) {
+      try {
+        stopAllAudio();
+        currentAudioPlayer = new Audio("data:audio/wav;base64," + finalData.reply_audio_base64);
+        currentAudioPlayer.play().catch(() => {
+          if (finalData.response) speak(finalData.response);
+        });
+      } catch (e) {
+        if (finalData.response) speak(finalData.response);
+      }
+    } else if (finalData.response) {
+      speak(finalData.response);
+    }
   }
 
   async function sendToListen(blob, mimeType, label) {
@@ -469,29 +502,8 @@
           chatArea.appendChild(heardRow);
         }
 
-        const cmd = finalData.command || {};
         const responseTime = performance.now() - startTime;
-
-        addBubble('bot', finalData.response || '(no reply text)', {
-          commandType: cmd.type,
-          direction: cmd.direction,
-          track: cmd.track,
-          responseTime: responseTime
-        });
-
-        if (cmd.type === 'play_song') {
-          playDoraemonSong(cmd.track);
-        } else if (finalData.reply_audio_base64) {
-          try {
-            stopAllAudio();
-            currentAudioPlayer = new Audio("data:audio/wav;base64," + finalData.reply_audio_base64);
-            currentAudioPlayer.play().catch(() => {});
-          } catch (e) {
-            if (finalData.response) speak(finalData.response);
-          }
-        } else if (finalData.response) {
-          speak(finalData.response);
-        }
+        handleBotReply(finalData, responseTime);
         return;
       }
 
@@ -529,29 +541,12 @@
       if (!resp.ok) {
         addBubble('bot', data.error || ('Server error (' + resp.status + ')'), { error: true });
       } else {
-        const cmd = data.command || {};
         const responseTime = performance.now() - startTime;
-
-        addBubble('bot', data.response || '(no reply text)', {
-          commandType: cmd.type,
-          direction: cmd.direction,
-          track: cmd.track,
-          responseTime: responseTime
-        });
-
-        if (cmd.type === 'play_song') {
-          playDoraemonSong(cmd.track);
-        } else if (data.reply_audio_base64) {
-          try {
-            stopAllAudio();
-            currentAudioPlayer = new Audio("data:audio/wav;base64," + data.reply_audio_base64);
-            currentAudioPlayer.play().catch(() => {});
-          } catch (e) {
-            if (data.response) speak(data.response);
-          }
-        } else if (data.response) {
-          speak(data.response);
-        }
+        handleBotReply({
+          response: data.response,
+          command: data.command,
+          reply_audio_base64: data.reply_audio_base64
+        }, responseTime);
       }
     } catch (err) {
       addBubble('bot', 'Could not reach backend: ' + err.message, { error: true });
